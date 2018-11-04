@@ -17,6 +17,7 @@ import { domain, count, prettyDate, pluralize } from './filters'
 import AppView from './components/App.vue'
 import Notifications from 'vue-notification'
 import moment from 'moment'
+import {VudalPlugin} from './store/utilities/index.js'
 
 // Import Install and register helper items
 Vue.filter('count', count)
@@ -31,6 +32,7 @@ Vue.filter('formatDate', function(value) {
     return moment(String(value)).format('MM/DD/YYYY hh:mm')
   }
 })
+Vue.use(VudalPlugin)
 
 
 // Routing logic

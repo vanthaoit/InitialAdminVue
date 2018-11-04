@@ -12,3 +12,7 @@ export function HttpGet(uri) {
   //   result = this.errors.push(e);
   // });
 }
+export function HttpPost(uri, content) {
+  let url = API.SERVER_URI + "/" + uri;
+  return axios.post(url, content);
+}
