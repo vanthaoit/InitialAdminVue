@@ -78,9 +78,11 @@
               
               </div>
               <div class="content row row-product force-overflow">
-                <div class="col-sm-3 label-product">Category (*)</div>
+                <div class="col-sm-3 label-product">Category</div>
                 <div class="col-sm-9">
-                  <input type="text" class="content-product" v-model="products.CategoryId"/>
+                  <select v-if="categoryList[0]" v-model="categorySelected" class="selected-option">
+                    <option v-for="item in categoryList" :key="item.Id" v-bind:value="item.Id">{{item.Name}}</option>
+                  </select>
                 </div>
                 
               </div>
@@ -128,14 +130,16 @@
               <div class="content row row-product force-overflow">
                 <div class="col-sm-3 label-product">Home Flag</div>
                 <div class="col-sm-9">
-                  <input type="text" class="content-product" v-model="products.HomeFlag"/>
+                  <input v-model="checkHomeFlag" type="radio" name="homeFlag" value="true"> True<br>
+                  <input v-model="checkHomeFlag" type="radio" name="homeFlag" value="false"> False<br>
                 </div>
                 
               </div>
               <div class="content row row-product force-overflow">
                 <div class="col-sm-3 label-product">Hot Flag</div>
                 <div class="col-sm-9">
-                  <input type="text" class="content-product" v-model="products.HotFlag"/>
+                  <input v-model="checkHotFlag" type="radio" name="hotFlag" value="true"> True<br>
+                  <input v-model="checkHotFlag" type="radio" name="hotFlag" value="false"> False<br>
                 </div>
                 
               </div>
@@ -157,8 +161,8 @@
                 <div class="col-sm-3 label-product">Status</div>
                 <div class="col-sm-9">
                   <select v-model="selected" class="selected-option">
-                    <option disabled value="InActive">InActive</option>
-                    <option>Active</option>
+                    <option value="InActive">InActive</option>
+                    <option value="Active">Active</option>
                   </select>
                 </div>
                 
@@ -182,7 +186,7 @@
 import $ from "jquery";
 import { HttpGet, HttpPost } from "../../api/index.js";
 import Vudal from "../../store/utilities/index.js";
-import Vue from 'vue'
+import Vue from "vue";
 
 import {
   HTTPS_CONSTANTS,
@@ -192,12 +196,12 @@ import {
 // Require needed datatables modules
 require("datatables.net");
 require("datatables.net-bs");
-const moment = require('moment')
-require('moment/locale/es')
- 
-Vue.use(require('vue-moment'), {
-    moment
-})
+const moment = require("moment");
+require("moment/locale/es");
+
+Vue.use(require("vue-moment"), {
+  moment
+});
 
 export default {
   name: "Products",
@@ -205,13 +209,17 @@ export default {
   data() {
     return {
       productResult: [],
+      categoryList: [],
       products: {},
       nameProduct: "",
       error: null,
-      selected:'InActive'
-      
+      categorySelected: 1,
+      checkHomeFlag: true,
+      checkHotFlag: true,
+      selected: "InActive"
     };
   },
+  created: function() {},
   methods: {
     callProducts() {
       let uri = GENERAL_CONSTANTS.PRODUCT + "/" + GENERAL_CONSTANTS.GET_ALL;
@@ -229,56 +237,75 @@ export default {
         });
     },
     createProduct() {
+      let uri = GENERAL_CONSTANTS.PRODUCT + "/" + HTTPS_CONSTANTS.POST;
+      this.products.CategoryId = this.categorySelected;
+      if (this.products.Price == undefined) this.products.Price = 1;
+      if (this.products.PromotionPrice == undefined)
+        this.products.PromotionPrice = 1;
+      if (this.products.OriginalPrice == undefined)
+        this.products.OriginalPrice = 1;
+      if (this.products.Name == undefined) this.products.Name = "";
+      if (this.products.Content == undefined) this.products.Content = "";
+      if (this.products.Description == undefined)
+        this.products.Description = "";
+      this.products.HomeFlag = this.checkHomeFlag;
+      this.products.HotFlag = this.checkHotFlag;
+      if (this.products.ViewCount == undefined)
+        this.products.ViewCount = 1;
       
-      let uri = GENERAL_CONSTANTS.PRODUCT + "/" + "post";
-      this.products.CategoryId= 1;
-      this.products.Price= 1;
-      this.products.PromotionPrice= 1;
-      this.products.OriginalPrice= 1;
-      if(this.products.Name == undefined) this.products.Name = "";
-      if(this.products.Content == undefined) this.products.Content = "";
-      if(this.products.Description == undefined) this.products.Description = "";
-      this.products.HomeFlag= 1;
-      this.products.HotFlag= 1;
-      this.products.ViewCount= 1;
-      if(this.products.SeoDescription == undefined) this.products.SeoDescription = "";
+      if (this.products.SeoDescription == undefined)
+        this.products.SeoDescription = "";
       this.products.DateCreated = new Date();
       this.products.DateModified = new Date();
       this.products.Image = "";
-      if(this.products.Tags == undefined) this.products.Tags = "";
+      if (this.products.Tags == undefined) this.products.Tags = "";
       this.products.Unit = "";
       this.products.SeoPageTitle = "";
       this.products.SeoKeywords = "";
-      this.products.Status =this.selected;
-      HttpPost(uri,this.products).then(response =>{
-        
-        this.productResult = response.data;
-        if(this.productResult != undefined){
-          this.$notify({
-          group: "foo",
-          title: "<h4 style='text-align:center'>successful create product</h4>",
-          text: "<h3 style='text-align:center'>You create successfully "+this.productResult.Name+" with Id = "+this.productResult.Id+"</h3>",
-          type: "success",
-          duration: 2000,
-          speed: 2000,
-          data: {}
-          
-        });
-        
-        }
-        setTimeout(()=>{
-          window.location.href = "http://192.168.56.1:8000/administrator/products"
-        },1500);
-        
-      })
-      .catch(e => {
+      this.products.Status = this.selected;
+      HttpPost(uri, this.products)
+        .then(response => {
+          this.productResult = response.data;
+          if (this.productResult != undefined) {
+            this.$notify({
+              group: "foo",
+              title:
+                "<h4 style='text-align:center'>successful create product</h4>",
+              text:
+                "<h3 style='text-align:center'>You create successfully " +
+                " with Id = " +
+                this.productResult.Id +
+                "</h3>",
+              type: "success",
+              duration: 2000,
+              speed: 2000,
+              data: {}
+            });
+          }
+          setTimeout(() => {
+            window.location.href =
+              "http://192.168.206.43:8000/administrator/products";
+          }, 1500);
+        })
+        .catch(e => {
           this.error = e.response.statusText;
         });
-      
+    },
+    getCategory() {
+      let uri =
+        GENERAL_CONSTANTS.PRODUCT_CATEGORY + "/" + GENERAL_CONSTANTS.GET_ALL;
+      HttpGet(uri)
+        .then(response => {
+          this.categoryList = response.data;
+        })
+        .catch(e => {
+          this.error = e.response.statusText;
+        });
     }
   },
   mounted() {
     this.callProducts();
+    this.getCategory();
   },
   updated() {
     this.$nextTick(() => {

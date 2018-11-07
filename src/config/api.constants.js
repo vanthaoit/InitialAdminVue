@@ -1,4 +1,4 @@
-const SERVER_URI = "http://192.168.56.1:1500/api";
+const SERVER_URI = "http://192.168.206.43:150/api";
 const fixedLayout = false;
 const hideLogoOnMobile = false;
 

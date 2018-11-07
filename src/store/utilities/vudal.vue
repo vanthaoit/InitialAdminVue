@@ -95,6 +95,7 @@ body.no-scroll {
 
 .selected-option{
   min-height: 32px;
+  min-width: 20%;
 }
 
 .vudal-dimmer {
